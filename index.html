@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PolyLog — Your Ultimate Gaming Hub</title>
+  <meta name="description" content="PolyLog is your all-in-one gaming hub. Discover trending games, upcoming releases, trailers, news, and deals across PC, PlayStation, Xbox, and Nintendo.">
+  <meta name="keywords" content="video games, gaming hub, game deals, upcoming games, game trailers, PC games, PlayStation, Xbox, Nintendo Switch">
+  <meta name="author" content="9onewave.github.io">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://9onewave.github.io/polylog/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PolyLog — Your Ultimate Gaming Hub">
+  <meta property="og:description" content="Discover trending games, upcoming releases, trailers, news, and deals all in one place.">
+  <meta property="og:url" content="https://9onewave.github.io/polylog/">
+  <meta property="og:site_name" content="PolyLog">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PolyLog — Your Ultimate Gaming Hub">
+  <meta name="twitter:description" content="Discover trending games, upcoming releases, trailers, news, and deals.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PolyLog",
+    "url": "https://9onewave.github.io/polylog/",
+    "description": "All-in-one gaming hub for discovering and tracking video games",
+    "author": { "@type": "Person", "url": "https://9onewave.github.io" },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://9onewave.github.io/polylog/pages/search.html?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+</head>
+<body>
+
+<!-- Components injected by JS -->
+<script src="js/components.js"></script>
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<section id="hero" aria-label="Featured game">
+  <div class="hero-bg">
+    <img class="hero-bg-img" id="hero-bg-img" src="" alt="Featured Game Background" loading="eager">
+    <div class="hero-bg-gradient"></div>
+  </div>
+  <div class="container" style="position:relative;z-index:1;width:100%">
+    <div class="hero-content" id="hero-content">
+      <div class="hero-badge"><span class="hero-badge-dot"></span>Featured Game</div>
+      <h1 class="hero-title" id="hero-title">Loading…</h1>
+      <div class="hero-meta" id="hero-meta"></div>
+      <p class="hero-desc" id="hero-desc"></p>
+      <div class="hero-actions" id="hero-actions"></div>
+    </div>
+  </div>
+  <div class="hero-scroll-indicator">
+    <span>Scroll</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── Trending ──────────────────────────────────────────────── -->
+<section class="section" aria-label="Trending games">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div>
+        <div class="section-label">🔥 Hot Right Now</div>
+        <h2 class="section-title">Trending Games</h2>
+      </div>
+      <a href="pages/games.html?sort=trending" class="view-all">
+        View All
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <!-- Platform filter -->
+    <div class="filter-bar fade-up">
+      <span class="filter-label">Platform</span>
+      <div class="filter-chips" id="platform-filter">
+        <button class="filter-chip active" data-platform="">All</button>
+        <button class="filter-chip" data-platform="4">🖥 PC</button>
+        <button class="filter-chip" data-platform="187">🎮 PlayStation</button>
+        <button class="filter-chip" data-platform="1">🟩 Xbox</button>
+        <button class="filter-chip" data-platform="7">🔴 Nintendo</button>
+      </div>
+      <select class="filter-select" id="genre-filter" aria-label="Filter by genre">
+        <option value="">All Genres</option>
+      </select>
+    </div>
+
+    <div class="games-grid" id="trending-grid"></div>
+  </div>
+</section>
+
+<!-- ── Upcoming ───────────────────────────────────────────────── -->
+<section class="section" style="padding-top:0" aria-label="Upcoming releases">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div>
+        <div class="section-label">📅 Coming Soon</div>
+        <h2 class="section-title">Upcoming Releases</h2>
+      </div>
+      <a href="pages/upcoming.html" class="view-all">
+        View All
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="h-scroll" id="upcoming-scroll"></div>
+  </div>
+</section>
+
+<!-- ── Latest Trailers ────────────────────────────────────────── -->
+<section class="section" style="padding-top:0" aria-label="Game trailers">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div>
+        <div class="section-label">🎬 Watch</div>
+        <h2 class="section-title">Latest Trailers</h2>
+      </div>
+    </div>
+    <div class="trailers-grid" id="trailers-grid"></div>
+  </div>
+</section>
+
+<!-- ── News ──────────────────────────────────────────────────── -->
+<section class="section" style="padding-top:0" aria-label="Gaming news">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div>
+        <div class="section-label">📰 Latest</div>
+        <h2 class="section-title">Gaming News</h2>
+      </div>
+      <a href="pages/news.html" class="view-all">
+        View All
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="news-grid" id="news-grid">
+      <div class="news-card-featured" id="news-featured" style="min-height:300px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg)">
+        <div class="skeleton" style="width:100%;aspect-ratio:16/9"></div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:10px">
+          <div class="skeleton" style="height:14px;width:40%"></div>
+          <div class="skeleton" style="height:20px;width:90%"></div>
+          <div class="skeleton" style="height:14px;width:60%"></div>
+        </div>
+      </div>
+      <div class="news-list" id="news-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Deals ──────────────────────────────────────────────────── -->
+<section class="section" style="padding-top:0" aria-label="Game deals">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div>
+        <div class="section-label">💰 Save Big</div>
+        <h2 class="section-title">Today's Best Deals</h2>
+      </div>
+      <a href="pages/deals.html" class="view-all">
+        View All
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="deals-grid" id="deals-grid"></div>
+  </div>
+</section>
+
+<!-- Main JS -->
+<script src="js/main.js"></script>
+<script>
+(async function() {
+  const P = window.POLYLOG;
+
+  // ── Hero ──────────────────────────────────────────────────
+  async function loadHero() {
+    const data = await P.RAWG.games({ ordering: '-rating', metacritic: '85,100', page_size: 5 });
+    const games = data?.results || [];
+    if (!games.length) return;
+    const game = games[Math.floor(Math.random() * Math.min(games.length, 5))];
+    const bg = document.getElementById('hero-bg-img');
+    const title = document.getElementById('hero-title');
+    const meta = document.getElementById('hero-meta');
+    const desc = document.getElementById('hero-desc');
+    const actions = document.getElementById('hero-actions');
+
+    if (bg) { bg.src = game.background_image || ''; bg.alt = game.name; }
+    if (title) title.textContent = game.name;
+    if (meta) {
+      const rating = game.rating ? `<span class="hero-rating">⭐ ${game.rating.toFixed(1)}</span>` : '';
+      const release = game.released ? `<span class="hero-meta-item">📅 ${new Date(game.released).toLocaleDateString('en-US',{year:'numeric',month:'long'})}</span>` : '';
+      const genres = (game.genres||[]).slice(0,2).map(g=>`<span class="badge badge-blue">${g.name}</span>`).join('');
+      meta.innerHTML = rating + release + genres;
+    }
+    if (desc) {
+      const text = game.description_raw || '';
+      desc.textContent = text ? text.slice(0, 160) + '…' : 'Explore this top-rated gaming experience.';
+    }
+    if (actions) {
+      actions.innerHTML = `
+        <a href="pages/game.html?slug=${game.slug}" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Explore Game
+        </a>
+        <button class="btn btn-secondary" onclick="P.Wishlist.add(${JSON.stringify({slug:game.slug,name:game.name,background_image:game.background_image,rating:game.rating,released:game.released}).replace(/"/g,"'")})">
+          💙 Wishlist
+        </button>`;
+    }
+  }
+
+  // ── Trending ──────────────────────────────────────────────
+  async function loadTrending(platform = '', genre = '') {
+    const grid = document.getElementById('trending-grid');
+    P.skeletonCards(8, grid);
+    const params = { ordering: '-added', page_size: 8 };
+    if (platform) params.platforms = platform;
+    if (genre) params.genres = genre;
+    const data = await P.RAWG.games(params);
+    P.renderGames(data?.results || [], grid);
+  }
+
+  // ── Platform filter ───────────────────────────────────────
+  let activePlatform = '', activeGenre = '';
+  document.getElementById('platform-filter')?.addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip');
+    if (!chip) return;
+    document.querySelectorAll('#platform-filter .filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activePlatform = chip.dataset.platform;
+    loadTrending(activePlatform, activeGenre);
+  });
+  document.getElementById('genre-filter')?.addEventListener('change', e => {
+    activeGenre = e.target.value;
+    loadTrending(activePlatform, activeGenre);
+  });
+
+  // ── Genres dropdown ───────────────────────────────────────
+  async function loadGenres() {
+    const sel = document.getElementById('genre-filter');
+    if (!sel) return;
+    const data = await P.RAWG.genres();
+    (data?.results || []).forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.slug; opt.textContent = g.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  // ── Upcoming ──────────────────────────────────────────────
+  async function loadUpcoming() {
+    const scroll = document.getElementById('upcoming-scroll');
+    if (!scroll) return;
+    const data = await P.RAWG.upcoming();
+    const games = (data?.results || []).filter(g => g.released && new Date(g.released) > new Date());
+    if (!games.length) { scroll.innerHTML = '<p style="color:var(--text-3);padding:16px">No upcoming releases found.</p>'; return; }
+    scroll.innerHTML = games.slice(0, 10).map(g => `
+      <a class="upcoming-card" href="pages/game.html?slug=${g.slug}">
+        <div class="upcoming-card-img-wrap">
+          <img class="upcoming-card-img" src="${P.imgWideSrc(g.background_image)}" alt="${g.name}" loading="lazy" onerror="this.src='${P.PLACEHOLDER_WIDE}'">
+          <div class="upcoming-card-badge">Upcoming</div>
+        </div>
+        <div class="upcoming-card-body">
+          <div class="upcoming-card-title">${g.name}</div>
+          <div id="cd-${g.id}"></div>
+        </div>
+      </a>`).join('');
+    games.slice(0, 10).forEach(g => P.renderCountdown(g.released, document.getElementById(`cd-${g.id}`)));
+  }
+
+  // ── Trailers ──────────────────────────────────────────────
+  async function loadTrailers() {
+    const grid = document.getElementById('trailers-grid');
+    if (!grid) return;
+    // Use top-rated games and construct YT search links
+    const data = await P.RAWG.games({ ordering: '-rating', page_size: 6, metacritic: '80,100' });
+    const games = data?.results || [];
+    grid.innerHTML = games.map(g => {
+      const ytQuery = encodeURIComponent(`${g.name} official game trailer`);
+      const thumb = g.background_image || P.PLACEHOLDER_WIDE;
+      return `
+        <div class="trailer-card" onclick="window.open('https://www.youtube.com/results?search_query=${ytQuery}','_blank')">
+          <div class="trailer-thumb">
+            <img class="trailer-thumb-img" src="${thumb}" alt="${g.name} trailer" loading="lazy" onerror="this.src='${P.PLACEHOLDER_WIDE}'">
+            <div class="trailer-play-btn">
+              <div class="trailer-play-circle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:#fff;margin-left:2px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="trailer-body">
+            <div class="trailer-title">Official Trailer</div>
+            <div class="trailer-game">${g.name}</div>
+          </div>
+        </div>`;
+    }).join('');
+    P.initFadeUp(grid);
+  }
+
+  // ── News ──────────────────────────────────────────────────
+  async function loadNews() {
+    const featuredEl = document.getElementById('news-featured');
+    const listEl = document.getElementById('news-list');
+    const articles = await P.News.all();
+    if (!articles.length) {
+      if (featuredEl) featuredEl.innerHTML = '<p style="padding:24px;color:var(--text-3)">Could not load news.</p>';
+      return;
+    }
+    const [first, ...rest] = articles;
+    const tag = P.getNewsTag(first);
+    const imgSrc = first.thumbnail || first.enclosure?.link || P.PLACEHOLDER_WIDE;
+    if (featuredEl) {
+      featuredEl.innerHTML = `
+        <img src="${imgSrc}" alt="${first.title}" style="width:100%;aspect-ratio:16/9;object-fit:cover;filter:brightness(.65) saturate(.8)" loading="lazy" onerror="this.src='${P.PLACEHOLDER_WIDE}'">
+        <div class="news-card-featured-body">
+          <span class="news-tag ${tag.cls}">${tag.label}</span>
+          <h3 class="news-card-featured-title">${first.title}</h3>
+          <p style="font-size:13px;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${first.description?.replace(/<[^>]+>/g,'').slice(0,140)||''}…</p>
+          <div class="news-meta">
+            <span>${first.source}</span>
+            <span>·</span>
+            <span>${P.timeAgo(first.pubDate)}</span>
+          </div>
+        </div>`;
+      featuredEl.onclick = () => window.open(first.link, '_blank', 'noopener');
+    }
+    if (listEl) {
+      listEl.innerHTML = rest.slice(0, 4).map(a => {
+        const img = a.thumbnail || a.enclosure?.link || P.PLACEHOLDER_WIDE;
+        return `
+          <div class="news-list-card" onclick="window.open('${a.link}','_blank','noopener')">
+            <img class="news-list-img" src="${img}" alt="${a.title}" loading="lazy" onerror="this.src='${P.PLACEHOLDER_WIDE}'">
+            <div class="news-list-body">
+              <div class="news-list-title">${a.title}</div>
+              <div class="news-list-meta">${a.source} · ${P.timeAgo(a.pubDate)}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+  }
+
+  // ── Deals ─────────────────────────────────────────────────
+  async function loadDeals() {
+    const grid = document.getElementById('deals-grid');
+    if (!grid) return;
+    const deals = await P.CheapShark.deals({ pageSize: 6 });
+    if (!deals || !deals.length) { grid.innerHTML = '<p style="color:var(--text-3);grid-column:1/-1">No deals available right now.</p>'; return; }
+    grid.innerHTML = deals.map(d => `
+      <a class="deal-card" href="https://www.cheapshark.com/redirect?dealID=${d.dealID}" target="_blank" rel="noopener noreferrer">
+        <div class="deal-card-img-wrap">
+          <img class="deal-card-img" src="${d.thumb || P.PLACEHOLDER_WIDE}" alt="${d.title}" loading="lazy" onerror="this.src='${P.PLACEHOLDER_WIDE}'">
+        </div>
+        <div class="deal-card-body">
+          <div class="deal-card-title">${d.title}</div>
+          <div class="deal-card-prices">
+            <span class="deal-price-now">$${parseFloat(d.salePrice).toFixed(2)}</span>
+            <span class="deal-price-was">$${parseFloat(d.normalPrice).toFixed(2)}</span>
+            <span class="deal-badge">-${Math.round(d.savings)}%</span>
+          </div>
+          <div class="deal-store">⭐ ${parseFloat(d.dealRating).toFixed(1)} deal rating</div>
+        </div>
+      </a>`).join('');
+    P.initFadeUp(grid);
+  }
+
+  // ── Run ───────────────────────────────────────────────────
+  loadHero();
+  loadTrending();
+  loadGenres();
+  loadUpcoming();
+  loadTrailers();
+  loadNews();
+  loadDeals();
+})();
+</script>
+</body>
+</html>

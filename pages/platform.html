@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Platform Games — PolyLog</title>
+  <meta name="description" id="page-desc" content="Browse top games for your platform on PolyLog.">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<script src="../js/components.js"></script>
+
+<main style="padding-top:var(--nav-h)">
+  <div class="page-hero" id="platform-hero">
+    <div class="container">
+      <div class="section-label" id="hero-label">🕹 Platform</div>
+      <h1 class="page-hero-title" id="hero-title">Loading…</h1>
+      <p class="page-hero-desc" id="hero-desc"></p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Platform switcher -->
+    <div class="filter-bar fade-up" style="margin-bottom:24px">
+      <span class="filter-label">Switch Platform</span>
+      <div class="filter-chips" id="platform-switcher">
+        <a class="filter-chip" href="platform.html?p=pc">🖥 PC</a>
+        <a class="filter-chip" href="platform.html?p=playstation">🎮 PlayStation</a>
+        <a class="filter-chip" href="platform.html?p=xbox">🟩 Xbox</a>
+        <a class="filter-chip" href="platform.html?p=nintendo">🔴 Nintendo</a>
+      </div>
+    </div>
+
+    <!-- Top Rated -->
+    <div class="section-header fade-up" style="margin-top:8px">
+      <div><div class="section-label">🏆 Best Of</div><h2 class="section-title">Top Rated</h2></div>
+    </div>
+    <div class="games-grid" id="top-grid" style="margin-bottom:48px"></div>
+
+    <!-- Trending -->
+    <div class="section-header fade-up">
+      <div><div class="section-label">🔥 Hot Now</div><h2 class="section-title">Trending</h2></div>
+    </div>
+    <div class="games-grid" id="trending-grid" style="margin-bottom:48px"></div>
+
+    <!-- Upcoming -->
+    <div class="section-header fade-up">
+      <div><div class="section-label">📅 Coming Soon</div><h2 class="section-title">Upcoming Releases</h2></div>
+      <a href="upcoming.html" class="view-all">View All <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    </div>
+    <div class="h-scroll" id="upcoming-scroll"></div>
+  </div>
+</main>
+
+<script src="../js/main.js"></script>
+<script>
+(async function() {
+  const P = window.POLYLOG;
+  const params = new URLSearchParams(window.location.search);
+  const platformKey = params.get('p') || 'pc';
+
+  const PLATFORMS = {
+    pc:          { id: 4,   label: '🖥 PC',          name: 'PC', color: '#00E5FF', desc: 'The home of gaming. Discover the best PC games across Steam, Epic Games Store, and more.' },
+    playstation: { id: 187, label: '🎮 PlayStation',  name: 'PlayStation', color: '#003087', desc: 'Explore PlayStation exclusives and top-rated games for PS4 and PS5.' },
+    xbox:        { id: 1,   label: '🟩 Xbox',         name: 'Xbox', color: '#107C10', desc: 'The best Xbox games — from exclusives to Game Pass titles on Xbox One and Series X/S.' },
+    nintendo:    { id: 7,   label: '🔴 Nintendo',     name: 'Nintendo Switch', color: '#E60012', desc: 'Nintendo Switch games including beloved exclusives and indie hits.' },
+  };
+
+  const plat = PLATFORMS[platformKey] || PLATFORMS.pc;
+
+  // SEO
+  document.getElementById('page-title').textContent = `${plat.name} Games — PolyLog`;
+  document.getElementById('page-desc').content = plat.desc;
+  document.getElementById('hero-label').textContent = plat.label;
+  document.getElementById('hero-title').textContent = `${plat.name} Games`;
+  document.getElementById('hero-desc').textContent = plat.desc;
+
+  // Highlight active platform chip
+  document.querySelectorAll('#platform-switcher .filter-chip').forEach(c => {
+    const href = c.getAttribute('href');
+    if (href && href.includes(platformKey)) c.classList.add('active');
+  });
+
+  // Load grids
+  async function loadGrid(id, params) {
+    const grid = document.getElementById(id);
+    P.skeletonCards(8, grid);
+    const data = await P.RAWG.games({ platforms: plat.id, page_size: 8, ...params });
+    P.renderGames(data?.results || [], grid);
+  }
+
+  async function loadUpcoming() {
+    const scroll = document.getElementById('upcoming-scroll');
+    if (!scroll) return;
+    const now = new Date();
+    const future = new Date(now); future.setMonth(future.getMonth() + 6);
+    const fmt = d => d.toISOString().split('T')[0];
+    const data = await P.RAWG.games({ platforms: plat.id, ordering: 'released', dates: `${fmt(now)},${fmt(future)}`, page_size: 8 });
+    const games = (data?.results || []).filter(g => g.released && new Date(g.released) > new Date());
+    if (!games.length) { scroll.innerHTML = '<p style="color:var(--text-3)">No upcoming releases found.</p>'; return; }
+    scroll.innerHTML = games.map(g => `
+      <a class="upcoming-card" href="game.html?slug=${g.slug}">
+        <div class="upcoming-card-img-wrap">
+          <img class="upcoming-card-img" src="${P.imgWideSrc(g.background_image)}" alt="${g.name}" loading="lazy" onerror="this.src='${P.PLACEHOLDER_WIDE}'">
+          <div class="upcoming-card-badge">Upcoming</div>
+        </div>
+        <div class="upcoming-card-body">
+          <div class="upcoming-card-title">${g.name}</div>
+          <div id="cd-${g.id}"></div>
+        </div>
+      </a>`).join('');
+    games.forEach(g => P.renderCountdown(g.released, document.getElementById(`cd-${g.id}`)));
+  }
+
+  loadGrid('top-grid', { ordering: '-rating', metacritic: '70,100' });
+  loadGrid('trending-grid', { ordering: '-added' });
+  loadUpcoming();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platforms — PolyLog</title>
+  <meta name="description" content="Browse games by platform — PC, PlayStation, Xbox, and Nintendo Switch.">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .platform-card {
+      border-radius:var(--radius-xl);overflow:hidden;
+      background:var(--bg-2);border:1px solid var(--border);
+      padding:40px;cursor:pointer;transition:all var(--transition);
+      display:flex;flex-direction:column;gap:16px;position:relative;
+      text-decoration:none;
+    }
+    .platform-card:hover { transform:translateY(-6px);box-shadow:var(--shadow-lg); }
+    .platform-card-icon { font-size:3rem;margin-bottom:4px; }
+    .platform-card-name { font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-.02em; }
+    .platform-card-desc { font-size:14px;color:var(--text-2);line-height:1.7; }
+    .platform-card-stat { font-size:12px;color:var(--text-3);display:flex;gap:16px;margin-top:8px; }
+    .platform-card-cta { margin-top:auto;display:flex;gap:10px; }
+    .platforms-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:20px; }
+    @media(max-width:640px){ .platforms-grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<script src="../js/components.js"></script>
+
+<main style="padding-top:var(--nav-h)">
+  <div class="page-hero">
+    <div class="container">
+      <div class="section-label">🕹 Platforms</div>
+      <h1 class="page-hero-title">Choose Your Platform</h1>
+      <p class="page-hero-desc">Explore curated game collections for every major gaming platform.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="platforms-grid fade-up">
+      <a href="platform.html?p=pc" class="platform-card" style="border-color:rgba(0,229,255,.2)">
+        <div class="platform-card-icon">🖥</div>
+        <div class="platform-card-name" style="color:var(--accent)">PC Gaming</div>
+        <p class="platform-card-desc">The ultimate gaming platform. Access the largest library of games across Steam, Epic Games Store, GOG, and more. Modding, high framerates, and limitless customisation.</p>
+        <div class="platform-card-stat">
+          <span>🎮 Largest library</span>
+          <span>⚡ Best performance</span>
+          <span>🔧 Fully customisable</span>
+        </div>
+        <div class="platform-card-cta">
+          <span class="btn btn-primary btn-sm">Explore PC Games →</span>
+        </div>
+      </a>
+
+      <a href="platform.html?p=playstation" class="platform-card" style="border-color:rgba(0,48,135,.4)">
+        <div class="platform-card-icon">🎮</div>
+        <div class="platform-card-name" style="color:#006FCD">PlayStation</div>
+        <p class="platform-card-desc">Home to acclaimed exclusives like God of War, Spider-Man, and The Last of Us. PlayStation 4 and PS5 offer premium console gaming with DualSense haptic feedback.</p>
+        <div class="platform-card-stat">
+          <span>🏆 Award-winning exclusives</span>
+          <span>⚡ PS5 SSD speeds</span>
+          <span>🎭 Immersive haptics</span>
+        </div>
+        <div class="platform-card-cta">
+          <span class="btn btn-secondary btn-sm">Explore PlayStation →</span>
+        </div>
+      </a>
+
+      <a href="platform.html?p=xbox" class="platform-card" style="border-color:rgba(16,124,16,.3)">
+        <div class="platform-card-icon">🟩</div>
+        <div class="platform-card-name" style="color:#107C10">Xbox</div>
+        <p class="platform-card-desc">Xbox Game Pass offers incredible value with hundreds of games included. From Halo and Forza to third-party blockbusters — Xbox Series X delivers next-gen power.</p>
+        <div class="platform-card-stat">
+          <span>💎 Game Pass value</span>
+          <span>🌐 Play Anywhere</span>
+          <span>⚡ Quick Resume</span>
+        </div>
+        <div class="platform-card-cta">
+          <span class="btn btn-secondary btn-sm">Explore Xbox →</span>
+        </div>
+      </a>
+
+      <a href="platform.html?p=nintendo" class="platform-card" style="border-color:rgba(230,0,18,.25)">
+        <div class="platform-card-icon">🔴</div>
+        <div class="platform-card-name" style="color:#E60012">Nintendo Switch</div>
+        <p class="platform-card-desc">Play at home or on the go. Nintendo Switch combines portability with beloved franchises like Zelda, Mario, Pokémon, and Metroid — gaming for everyone.</p>
+        <div class="platform-card-stat">
+          <span>🔄 Handheld + Console</span>
+          <span>👨‍👩‍👧 Family friendly</span>
+          <span>🎯 Iconic exclusives</span>
+        </div>
+        <div class="platform-card-cta">
+          <span class="btn btn-secondary btn-sm">Explore Nintendo →</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Top games across all platforms -->
+    <div style="margin-top:64px">
+      <div class="section-header fade-up">
+        <div><div class="section-label">🌟 All Platforms</div><h2 class="section-title">Cross-Platform Hits</h2></div>
+        <a href="games.html" class="view-all">View All <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+      <div class="games-grid" id="cross-grid"></div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/main.js"></script>
+<script>
+(async function() {
+  const P = window.POLYLOG;
+  const grid = document.getElementById('cross-grid');
+  P.skeletonCards(8, grid);
+  const data = await P.RAWG.games({ ordering: '-rating', metacritic: '80,100', page_size: 8 });
+  P.renderGames(data?.results || [], grid);
+})();
+</script>
+</body>
+</html>

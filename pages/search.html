@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Search — PolyLog</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<script src="../js/components.js"></script>
+
+<main style="padding-top:var(--nav-h)">
+  <div class="page-hero">
+    <div class="container">
+      <div class="section-label">🔍 Search</div>
+      <h1 class="page-hero-title" id="search-heading">Search Results</h1>
+      <div style="max-width:600px;margin-top:20px;position:relative">
+        <input type="search" id="search-inline" class="search-bar" placeholder="Search games…" style="width:100%;border-radius:var(--radius-lg)">
+        <button id="search-go" class="btn btn-primary" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);height:36px;padding:0 18px">Search</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="results-meta" style="margin-bottom:24px;color:var(--text-3);font-size:14px"></div>
+
+    <!-- Filters -->
+    <div class="filter-bar fade-up">
+      <span class="filter-label">Platform</span>
+      <div class="filter-chips" id="plat-filter">
+        <button class="filter-chip active" data-platform="">All</button>
+        <button class="filter-chip" data-platform="4">🖥 PC</button>
+        <button class="filter-chip" data-platform="187">🎮 PS</button>
+        <button class="filter-chip" data-platform="1">🟩 Xbox</button>
+        <button class="filter-chip" data-platform="7">🔴 Switch</button>
+      </div>
+      <select class="filter-select" id="sort-filter">
+        <option value="-relevance">Relevance</option>
+        <option value="-rating">Top Rated</option>
+        <option value="-released">Newest</option>
+        <option value="-added">Most Popular</option>
+      </select>
+    </div>
+
+    <div class="games-grid" id="results-grid"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</main>
+
+<script src="../js/main.js"></script>
+<script>
+(async function() {
+  const P = window.POLYLOG;
+  let query = new URLSearchParams(window.location.search).get('q') || '';
+  let platform = '', sort = '-relevance', page = 1, totalPages = 1;
+
+  const inputEl = document.getElementById('search-inline');
+  if (inputEl) inputEl.value = query;
+
+  document.getElementById('page-title').textContent = query ? `"${query}" — PolyLog Search` : 'Search — PolyLog';
+  document.getElementById('search-heading').textContent = query ? `Results for "${query}"` : 'Search Games';
+
+  document.getElementById('search-go')?.addEventListener('click', () => {
+    const q = document.getElementById('search-inline').value.trim();
+    if (!q) return;
+    query = q; page = 1;
+    document.getElementById('page-title').textContent = `"${query}" — PolyLog Search`;
+    document.getElementById('search-heading').textContent = `Results for "${query}"`;
+    const url = new URL(window.location); url.searchParams.set('q', query); window.history.replaceState({}, '', url);
+    load();
+  });
+  inputEl?.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('search-go').click(); });
+
+  async function load() {
+    const grid = document.getElementById('results-grid');
+    P.skeletonCards(12, grid);
+    if (!query) { grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:64px;color:var(--text-3)"><div style="font-size:3rem;margin-bottom:16px">🔍</div><h3>Start searching</h3><p>Type a game name above to find it.</p></div>'; document.getElementById('results-meta').textContent=''; return; }
+    const params = { search: query, ordering: sort, page, page_size: 24 };
+    if (platform) params.platforms = platform;
+    const data = await P.RAWG.games(params);
+    const total = data?.count || 0;
+    totalPages = Math.ceil(total / 24);
+    document.getElementById('results-meta').textContent = `Found ${total.toLocaleString()} result${total!==1?'s':''} for "${query}"`;
+    P.renderGames(data?.results || [], grid);
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const el = document.getElementById('pagination');
+    if (!el || totalPages <= 1) { if(el) el.innerHTML=''; return; }
+    el.innerHTML = `
+      <button class="page-btn" onclick="changePage(${page-1})" ${page===1?'disabled style="opacity:0.4"':''}>‹</button>
+      <span style="font-size:13px;color:var(--text-3);padding:0 12px">Page ${page} of ${Math.min(totalPages,50)}</span>
+      <button class="page-btn" onclick="changePage(${page+1})" ${page===totalPages?'disabled style="opacity:0.4"':''}>›</button>`;
+  }
+
+  window.changePage = (p) => { if(p<1||p>totalPages)return; page=p; window.scrollTo({top:0,behavior:'smooth'}); load(); };
+
+  document.getElementById('plat-filter')?.addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip'); if (!chip) return;
+    document.querySelectorAll('#plat-filter .filter-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active'); platform=chip.dataset.platform; page=1; load();
+  });
+  document.getElementById('sort-filter')?.addEventListener('change', e => { sort=e.target.value; page=1; load(); });
+
+  load();
+})();
+</script>
+</body>
+</html>

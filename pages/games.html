@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Games — PolyLog</title>
+  <meta name="description" content="Browse and discover thousands of video games. Filter by platform, genre, rating, and release year.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://9onewave.github.io/polylog/pages/games.html">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<script src="../js/components.js"></script>
+
+<main style="padding-top:var(--nav-h)">
+  <div class="page-hero">
+    <div class="container">
+      <div class="section-label">🎮 Library</div>
+      <h1 class="page-hero-title">Browse Games</h1>
+      <p class="page-hero-desc">Explore thousands of games across all platforms. Filter, sort, and discover your next favourite.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Stats -->
+    <div class="stats-bar fade-up" id="games-stats">
+      <div class="stat-item"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Games Found</div></div>
+      <div class="stat-item"><div class="stat-num">500K+</div><div class="stat-label">Titles in Database</div></div>
+      <div class="stat-item"><div class="stat-num">50+</div><div class="stat-label">Platforms</div></div>
+      <div class="stat-item"><div class="stat-num">20+</div><div class="stat-label">Genres</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar fade-up">
+      <span class="filter-label">Platform</span>
+      <div class="filter-chips" id="plat-filter">
+        <button class="filter-chip active" data-platform="">All</button>
+        <button class="filter-chip" data-platform="4">🖥 PC</button>
+        <button class="filter-chip" data-platform="187">🎮 PlayStation</button>
+        <button class="filter-chip" data-platform="1">🟩 Xbox</button>
+        <button class="filter-chip" data-platform="7">🔴 Nintendo</button>
+      </div>
+    </div>
+
+    <div class="filter-bar fade-up" style="margin-top:-16px">
+      <span class="filter-label">Sort</span>
+      <select class="filter-select" id="sort-filter">
+        <option value="-rating">Top Rated</option>
+        <option value="-added">Trending</option>
+        <option value="-released">Newest</option>
+        <option value="released">Oldest</option>
+        <option value="name">A–Z</option>
+        <option value="-metacritic">Metacritic</option>
+      </select>
+      <span class="filter-label" style="margin-left:8px">Genre</span>
+      <select class="filter-select" id="genre-filter">
+        <option value="">All Genres</option>
+      </select>
+      <span class="filter-label" style="margin-left:8px">Year</span>
+      <select class="filter-select" id="year-filter">
+        <option value="">Any Year</option>
+      </select>
+    </div>
+
+    <!-- Grid -->
+    <div class="games-grid" id="games-grid"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</main>
+
+<script src="../js/main.js"></script>
+<script>
+(async function () {
+  const P = window.POLYLOG;
+  let currentPage = 1, totalPages = 1;
+  let filters = { platform: '', sort: '-rating', genre: '', year: '', search: '' };
+
+  // URL params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('sort')) { filters.sort = params.get('sort'); document.getElementById('sort-filter').value = filters.sort; }
+  if (params.get('q')) { filters.search = params.get('q'); }
+
+  // Populate year dropdown
+  const yearSel = document.getElementById('year-filter');
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear; y >= 1980; y--) {
+    const opt = document.createElement('option'); opt.value = y; opt.textContent = y; yearSel.appendChild(opt);
+  }
+
+  // Populate genres
+  async function loadGenres() {
+    const data = await P.RAWG.genres();
+    const sel = document.getElementById('genre-filter');
+    (data?.results || []).forEach(g => {
+      const opt = document.createElement('option'); opt.value = g.slug; opt.textContent = g.name; sel.appendChild(opt);
+    });
+  }
+
+  async function loadGames() {
+    const grid = document.getElementById('games-grid');
+    P.skeletonCards(12, grid);
+    const p = { ordering: filters.sort, page: currentPage, page_size: 24 };
+    if (filters.platform) p.platforms = filters.platform;
+    if (filters.genre) p.genres = filters.genre;
+    if (filters.year) p.dates = `${filters.year}-01-01,${filters.year}-12-31`;
+    if (filters.search) p.search = filters.search;
+    const data = await P.RAWG.games(p);
+    P.renderGames(data?.results || [], grid);
+    const total = data?.count || 0;
+    totalPages = Math.ceil(total / 24);
+    const statEl = document.getElementById('stat-total');
+    if (statEl) statEl.textContent = total.toLocaleString();
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const el = document.getElementById('pagination');
+    if (!el || totalPages <= 1) { if (el) el.innerHTML = ''; return; }
+    const pages = [];
+    const max = 7;
+    if (totalPages <= max) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push('…');
+      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push('…');
+      pages.push(totalPages);
+    }
+    el.innerHTML = `
+      <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled style="opacity:0.4"' : ''}>‹</button>
+      ${pages.map(p => p === '…' ? `<span style="padding:0 4px;color:var(--text-3)">…</span>` :
+        `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>`).join('')}
+      <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled style="opacity:0.4"' : ''}>›</button>`;
+  }
+
+  window.changePage = (p) => {
+    if (p < 1 || p > totalPages) return;
+    currentPage = p;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    loadGames();
+  };
+
+  // Filter events
+  document.getElementById('plat-filter')?.addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip'); if (!chip) return;
+    document.querySelectorAll('#plat-filter .filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    filters.platform = chip.dataset.platform;
+    currentPage = 1; loadGames();
+  });
+  document.getElementById('sort-filter')?.addEventListener('change', e => { filters.sort = e.target.value; currentPage = 1; loadGames(); });
+  document.getElementById('genre-filter')?.addEventListener('change', e => { filters.genre = e.target.value; currentPage = 1; loadGames(); });
+  document.getElementById('year-filter')?.addEventListener('change', e => { filters.year = e.target.value; currentPage = 1; loadGames(); });
+
+  loadGenres();
+  loadGames();
+})();
+</script>
+</body>
+</html>

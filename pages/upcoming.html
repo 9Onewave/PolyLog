@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upcoming Releases — PolyLog</title>
+  <meta name="description" content="Track upcoming video game releases with live countdown timers. Filter by platform and release window.">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .upcoming-list { display:flex;flex-direction:column;gap:16px; }
+    .upcoming-row {
+      background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;
+      display:grid;grid-template-columns:140px 1fr auto;align-items:center;gap:0;
+      cursor:pointer;transition:all var(--transition);
+    }
+    .upcoming-row:hover { border-color:var(--border-2);box-shadow:var(--shadow);transform:translateX(4px); }
+    .upcoming-row-img { width:140px;height:90px;object-fit:cover;flex-shrink:0; }
+    .upcoming-row-body { padding:16px 20px; }
+    .upcoming-row-title { font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:6px; }
+    .upcoming-row-meta { font-size:12.5px;color:var(--text-3);display:flex;gap:12px;align-items:center;flex-wrap:wrap; }
+    .upcoming-row-right { padding:16px 24px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0; }
+    .release-date-big { font-family:var(--font-display);font-size:.85rem;font-weight:700;color:var(--accent); }
+    @media(max-width:640px){
+      .upcoming-row{grid-template-columns:100px 1fr;grid-template-rows:auto auto}
+      .upcoming-row-right{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding:12px 16px}
+      .upcoming-row-img{height:70px}
+    }
+  </style>
+</head>
+<body>
+<script src="../js/components.js"></script>
+
+<main style="padding-top:var(--nav-h)">
+  <div class="page-hero">
+    <div class="container">
+      <div class="section-label">📅 Coming Soon</div>
+      <h1 class="page-hero-title">Upcoming Releases</h1>
+      <p class="page-hero-desc">Stay ahead of the curve. Track every anticipated release with live countdown timers.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Filter bar -->
+    <div class="filter-bar fade-up">
+      <span class="filter-label">Platform</span>
+      <div class="filter-chips" id="plat-filter">
+        <button class="filter-chip active" data-platform="">All Platforms</button>
+        <button class="filter-chip" data-platform="4">🖥 PC</button>
+        <button class="filter-chip" data-platform="187">🎮 PlayStation</button>
+        <button class="filter-chip" data-platform="1">🟩 Xbox</button>
+        <button class="filter-chip" data-platform="7">🔴 Nintendo</button>
+      </div>
+      <select class="filter-select" id="window-filter">
+        <option value="1">Next 1 Month</option>
+        <option value="3" selected>Next 3 Months</option>
+        <option value="6">Next 6 Months</option>
+        <option value="12">Next 12 Months</option>
+      </select>
+    </div>
+
+    <div id="upcoming-list" class="upcoming-list"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</main>
+
+<script src="../js/main.js"></script>
+<script>
+(async function() {
+  const P = window.POLYLOG;
+  let platform = '', months = 3, page = 1, totalPages = 1;
+  const timers = [];
+
+  function getRange(m) {
+    const now = new Date();
+    const future = new Date(now); future.setMonth(future.getMonth() + m);
+    const fmt = d => d.toISOString().split('T')[0];
+    return `${fmt(now)},${fmt(future)}`;
+  }
+
+  async function load() {
+    const list = document.getElementById('upcoming-list');
+    list.innerHTML = Array(6).fill(0).map(()=>`<div class="skeleton" style="height:90px;border-radius:var(--radius-lg)"></div>`).join('');
+    timers.forEach(clearInterval); timers.length = 0;
+
+    const params = { ordering: 'released', dates: getRange(months), page_size: 20, page };
+    if (platform) params.platforms = platform;
+    const data = await P.RAWG.games(params);
+    const games = (data?.results || []).filter(g => g.released && new Date(g.released) > new Date());
+    totalPages = Math.min(Math.ceil((data?.count||0)/20), 10);
+
+    if (!games.length) { list.innerHTML = '<p style="text-align:center;color:var(--text-3);padding:48px">No upcoming releases found for this filter.</p>'; return; }
+
+    list.innerHTML = games.map(g => {
+      const release = g.released ? new Date(g.released).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'}) : 'TBA';
+      const platforms = (g.platforms||[]).slice(0,3).map(p=>`<span>${P.platformIcon(p.platform.name)} ${p.platform.name}</span>`).join('');
+      const genres = (g.genres||[]).slice(0,2).map(x=>x.name).join(', ');
+      const rating = g.rating ? `⭐ ${g.rating.toFixed(1)}` : '';
+      return `
+        <a class="upcoming-row fade-up" href="game.html?slug=${g.slug}">
+          <img class="upcoming-row-img" src="${P.imgWideSrc(g.background_image)}" alt="${g.name}" loading="lazy" onerror="this.src='${P.PLACEHOLDER_WIDE}'">
+          <div class="upcoming-row-body">
+            <div class="upcoming-row-title">${g.name}</div>
+            <div class="upcoming-row-meta">
+              ${platforms}
+              ${genres ? `<span>· ${genres}</span>` : ''}
+              ${rating ? `<span>· ${rating}</span>` : ''}
+            </div>
+          </div>
+          <div class="upcoming-row-right">
+            <div class="release-date-big">${release}</div>
+            <div id="cd-${g.id}"></div>
+          </div>
+        </a>`;
+    }).join('');
+
+    P.initFadeUp(list);
+    games.forEach(g => {
+      const t = P.renderCountdown(g.released, document.getElementById(`cd-${g.id}`));
+      if (t) timers.push(t);
+    });
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const el = document.getElementById('pagination');
+    if (!el || totalPages <= 1) { if (el) el.innerHTML = ''; return; }
+    el.innerHTML = `
+      <button class="page-btn" onclick="changePage(${page-1})" ${page===1?'disabled style="opacity:0.4"':''}>‹ Prev</button>
+      <span style="font-size:13px;color:var(--text-3);padding:0 12px">Page ${page} of ${totalPages}</span>
+      <button class="page-btn" onclick="changePage(${page+1})" ${page===totalPages?'disabled style="opacity:0.4"':''}>Next ›</button>`;
+  }
+
+  window.changePage = (p) => { if (p<1||p>totalPages) return; page=p; window.scrollTo({top:0,behavior:'smooth'}); load(); };
+
+  document.getElementById('plat-filter')?.addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip'); if (!chip) return;
+    document.querySelectorAll('#plat-filter .filter-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active'); platform = chip.dataset.platform; page=1; load();
+  });
+  document.getElementById('window-filter')?.addEventListener('change', e => { months = parseInt(e.target.value); page=1; load(); });
+
+  load();
+})();
+</script>
+</body>
+</html>
