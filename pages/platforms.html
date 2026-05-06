@@ -4,35 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Platforms — PolyLog</title>
-  <meta name="description" content="Browse games by platform — PC, PlayStation, Xbox, and Nintendo Switch.">
+  <meta name="description" content="Browse games by platform — PC, PlayStation, Xbox, and Nintendo Switch on PolyLog.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://9onewave.github.io/polylog/pages/platforms.html">
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/style.css">
   <style>
     .platform-card {
-      border-radius:var(--radius-xl);overflow:hidden;
-      background:var(--bg-2);border:1px solid var(--border);
-      padding:40px;cursor:pointer;transition:all var(--transition);
-      display:flex;flex-direction:column;gap:16px;position:relative;
-      text-decoration:none;
+      border-radius:var(--radius-xl);overflow:hidden;background:var(--bg-2);border:1px solid var(--border);
+      padding:40px;transition:all var(--transition);display:flex;flex-direction:column;gap:16px;text-decoration:none;color:inherit;
     }
     .platform-card:hover { transform:translateY(-6px);box-shadow:var(--shadow-lg); }
     .platform-card-icon { font-size:3rem;margin-bottom:4px; }
     .platform-card-name { font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-.02em; }
     .platform-card-desc { font-size:14px;color:var(--text-2);line-height:1.7; }
-    .platform-card-stat { font-size:12px;color:var(--text-3);display:flex;gap:16px;margin-top:8px; }
-    .platform-card-cta { margin-top:auto;display:flex;gap:10px; }
+    .platform-card-stat { font-size:12px;color:var(--text-3);display:flex;gap:16px;margin-top:8px;flex-wrap:wrap; }
+    .platform-card-cta  { margin-top:auto;display:flex;gap:10px; }
     .platforms-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:20px; }
-    @media(max-width:640px){ .platforms-grid{grid-template-columns:1fr} }
+    @media(max-width:640px){ .platforms-grid { grid-template-columns:1fr; } }
   </style>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-04H1D0WZHN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-04H1D0WZHN');
-</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-04H1D0WZHN"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-04H1D0WZHN');</script>
 </head>
 <body>
 <script src="../js/components.js"></script>
@@ -105,7 +97,6 @@
       </a>
     </div>
 
-    <!-- Top games across all platforms -->
     <div style="margin-top:64px">
       <div class="section-header fade-up">
         <div><div class="section-label">🌟 All Platforms</div><h2 class="section-title">Cross-Platform Hits</h2></div>

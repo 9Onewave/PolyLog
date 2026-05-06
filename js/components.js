@@ -1,12 +1,12 @@
 /* ============================================================
-   POLYLOG — Shared Components (nav, footer, modal, toast, loader)
+   POLYLOG — Shared Components
+   Author: 9onewave.github.io
    ============================================================ */
 
 (function () {
   const isRoot = !window.location.pathname.includes('/pages/');
   const base = isRoot ? '' : '../';
 
-  // ── Inject shared HTML ──────────────────────────────────────
   function inject() {
     document.body.insertAdjacentHTML('afterbegin', loader());
     document.body.insertAdjacentHTML('afterbegin', nav(base));
@@ -16,6 +16,7 @@
     document.body.insertAdjacentHTML('beforeend', searchOverlay());
     document.body.insertAdjacentHTML('beforeend', toastContainer());
     document.body.insertAdjacentHTML('beforeend', backToTop());
+    document.body.insertAdjacentHTML('beforeend', cookieConsentBanner());
   }
 
   function loader() {
@@ -44,13 +45,13 @@
           <a href="${b}pages/platform.html?p=nintendo" class="platform-pill">🔴 Switch</a>
         </div>
         <div class="nav-right">
-          <button class="nav-search-btn open-search" aria-label="Search" title="Search (Ctrl+K)">
+          <button class="nav-search-btn open-search" aria-label="Search games" title="Search (Ctrl+K)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           </button>
-          <a href="${b}pages/profile.html" class="nav-search-btn" title="Profile">
+          <a href="${b}pages/profile.html" class="nav-search-btn" title="My Wishlist">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </a>
-          <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+          <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle menu" aria-expanded="false">
             <span></span><span></span><span></span>
           </button>
         </div>
@@ -98,13 +99,15 @@
             <div>
               <div class="footer-links-title">About</div>
               <a href="${b}pages/about.html" class="footer-link">About PolyLog</a>
+              <a href="${b}pages/privacy.html" class="footer-link">Privacy Policy</a>
+              <a href="https://github.com/9onewave/9onewave.github.io/issues/new?title=PolyLog+Feedback" target="_blank" rel="noopener" class="footer-link">💬 Feedback</a>
               <a href="https://9onewave.github.io" target="_blank" rel="noopener" class="footer-link">Creator</a>
               <a href="${b}pages/profile.html" class="footer-link">My Profile</a>
             </div>
           </div>
         </div>
         <div class="footer-bottom">
-          <span>© ${year} PolyLog · Built by <a href="https://9onewave.github.io" target="_blank" rel="noopener" style="color:var(--accent)">9onewave</a> · Powered by RAWG, CheapShark & RSS feeds</span>
+          <span>© ${year} PolyLog · Built by <a href="https://9onewave.github.io" target="_blank" rel="noopener" style="color:var(--accent)">9onewave</a> · Powered by RAWG, CheapShark &amp; RSS feeds</span>
           <div class="footer-social">
             <a href="https://9onewave.github.io" target="_blank" rel="noopener" class="social-link" title="Creator">🌐</a>
           </div>
@@ -114,11 +117,11 @@
   }
 
   function modalHTML() {
-    return `<div id="modal-overlay">
+    return `<div id="modal-overlay" role="dialog" aria-modal="true" aria-label="Game Trailer">
       <div class="modal">
         <div class="modal-header">
           <div class="modal-title" id="modal-title">Trailer</div>
-          <button class="modal-close" id="modal-close" aria-label="Close">
+          <button class="modal-close" id="modal-close" aria-label="Close trailer">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
@@ -130,26 +133,37 @@
   }
 
   function searchOverlay() {
-    return `<div id="search-overlay" role="dialog" aria-label="Search">
+    return `<div id="search-overlay" role="dialog" aria-modal="true" aria-label="Search games">
       <button class="search-close-btn" id="search-close" aria-label="Close search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
       <div class="search-bar-wrap">
-        <input class="search-bar" id="search-input" type="search" placeholder="Search games… (Ctrl+K)" autocomplete="off" spellcheck="false">
+        <input class="search-bar" id="search-input" type="search" placeholder="Search games… (Ctrl+K)" aria-label="Search games" autocomplete="off" spellcheck="false">
         <div class="search-bar-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         </div>
-        <div class="search-results-drop" id="search-results-drop"></div>
+        <div class="search-results-drop" id="search-results-drop" role="listbox"></div>
       </div>
       <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-3)">Press <kbd style="background:var(--surface);border:1px solid var(--border);padding:2px 6px;border-radius:4px;font-size:11px">Enter</kbd> to see full results</p>
     </div>`;
   }
 
   function toastContainer() { return `<div id="toast-container"></div>`; }
+
   function backToTop() {
     return `<button id="back-to-top" aria-label="Back to top" title="Back to top">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg>
     </button>`;
+  }
+
+  // Cookie consent — kept from modified version
+  // FIX: z-index lowered to 1500 so it doesn't sit above the modal (2000) incorrectly;
+  //      the banner should NOT cover a video the user is watching
+  function cookieConsentBanner() {
+    return `<div id="cookie-consent" role="dialog" aria-label="Cookie consent">
+      <span style="font-size:13px;color:var(--text-2);flex:1 1 200px;">We use cookies for analytics. By continuing, you agree to our <a href="${base}pages/privacy.html" style="color:var(--accent)">Privacy Policy</a>.</span>
+      <button id="cookie-accept" class="btn btn-primary btn-sm">Got it</button>
+    </div>`;
   }
 
   if (document.readyState === 'loading') {

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /pages/profile.html
+Disallow: /pages/search.html
+Disallow: /pages/privacy.html
+
+Sitemap: https://9onewave.github.io/polylog/sitemap.xml

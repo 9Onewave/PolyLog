@@ -36,6 +36,14 @@ async function cachedFetch(url, ttl = 300000) {
   }
 }
 
+// ── HTML escaping (XSS prevention) — kept from modified version
+function escapeHTML(str) {
+  if (typeof str !== 'string') return String(str ?? '');
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
 // ── RAWG API ──────────────────────────────────────────────────
 const RAWG = {
   async games(params = {}) {
@@ -153,7 +161,8 @@ function platformIcon(p) {
   return '🕹';
 }
 function getNewsTag(item) {
-  const t = (item.title + item.description || '').toLowerCase();
+  // FIX: original had string concat bug — item.description could be undefined
+  const t = ((item.title || '') + (item.description || '')).toLowerCase();
   if (t.includes('review')) return { cls: 'news-tag-review', label: 'Review' };
   if (t.includes('guide') || t.includes('tips')) return { cls: 'news-tag-guide', label: 'Guide' };
   if (t.includes('update') || t.includes('patch')) return { cls: 'news-tag-update', label: 'Update' };
@@ -172,8 +181,9 @@ function metaScore(game) {
 }
 
 // ── Fallback images ───────────────────────────────────────────
-const PLACEHOLDER = 'https://via.placeholder.com/300x400/0D1117/4E5F73?text=No+Image';
-const PLACEHOLDER_WIDE = 'https://via.placeholder.com/600x338/0D1117/4E5F73?text=No+Image';
+// FIX: via.placeholder.com is often blocked — switched to placehold.co
+const PLACEHOLDER = 'https://placehold.co/300x400/0D1117/4E5F73?text=No+Image';
+const PLACEHOLDER_WIDE = 'https://placehold.co/600x338/0D1117/4E5F73?text=No+Image';
 function imgSrc(url) { return url || PLACEHOLDER; }
 function imgWideSrc(url) { return url || PLACEHOLDER_WIDE; }
 
@@ -183,7 +193,7 @@ function showToast(msg, icon = '✅') {
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${msg}</span>`;
+  toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${escapeHTML(msg)}</span>`;
   container.appendChild(toast);
   requestAnimationFrame(() => { requestAnimationFrame(() => toast.classList.add('show')); });
   setTimeout(() => {
@@ -208,27 +218,29 @@ function skeletonCards(n = 8, container) {
 
 // ── Game Card HTML ────────────────────────────────────────────
 function gameCardHTML(game) {
+  const safeName = escapeHTML(game.name || '');
   const rating = game.rating ? game.rating.toFixed(1) : 'N/A';
   const platforms = (game.platforms || []).slice(0, 4).map(p =>
     `<span class="platform-icon">${platformIcon(p.platform?.name)}</span>`).join('');
-  const genres = (game.genres || []).slice(0, 2).map(g => g.name).join(', ');
+  const genres = (game.genres || []).slice(0, 2).map(g => escapeHTML(g.name)).join(', ');
   const release = game.released
     ? new Date(game.released).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
     : 'TBA';
   const img = imgSrc(game.background_image);
+  // FIX: dynamic URL so cards work correctly from both root and /pages/
   const inPages = window.location.pathname.includes('/pages/');
   const url = inPages ? `game.html?slug=${game.slug}` : `pages/game.html?slug=${game.slug}`;
   return `
-    <a class="game-card" href="${url}" title="${game.name}">
+    <a class="game-card" href="${url}" title="${safeName}">
       <div class="game-card-img-wrap">
-        <img class="game-card-img" src="${img}" alt="${game.name}" loading="lazy" onerror="this.src='${PLACEHOLDER}'">
+        <img class="game-card-img" src="${img}" alt="${safeName}" loading="lazy" onerror="this.src='${PLACEHOLDER}'">
         <div class="game-card-overlay">
           <span style="font-size:12px;color:var(--text-2)">${genres || 'Gaming'}</span>
         </div>
         ${game.rating ? `<div class="game-card-rating">⭐ ${rating}</div>` : ''}
       </div>
       <div class="game-card-body">
-        <div class="game-card-title">${game.name}</div>
+        <div class="game-card-title">${safeName}</div>
         <div class="game-card-release">📅 ${release}</div>
         <div class="game-card-platforms">${platforms}</div>
       </div>
@@ -260,6 +272,7 @@ function initNav() {
   if (hamburger && mobileNav) {
     hamburger.addEventListener('click', () => {
       mobileNav.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', mobileNav.classList.contains('open'));
     });
   }
 
@@ -322,16 +335,16 @@ async function doSearch(q, container) {
   const data = await RAWG.search(q);
   const games = data?.results || [];
   if (!games.length) {
-    container.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-3);font-size:13px">No results for "${q}"</div>`;
+    container.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-3);font-size:13px">No results for "${escapeHTML(q)}"</div>`;
     return;
   }
   const base = window.location.pathname.includes('/pages/') ? '' : 'pages/';
   container.innerHTML = games.slice(0, 8).map(g => `
-    <a class="search-result-item" href="${base}game.html?slug=${g.slug}">
-      <img class="search-result-img" src="${imgSrc(g.background_image)}" alt="${g.name}" loading="lazy" onerror="this.src='${PLACEHOLDER}'">
+    <a class="search-result-item" role="option" href="${base}game.html?slug=${g.slug}">
+      <img class="search-result-img" src="${imgSrc(g.background_image)}" alt="${escapeHTML(g.name)}" loading="lazy" onerror="this.src='${PLACEHOLDER}'">
       <div>
-        <div class="search-result-name">${g.name}</div>
-        <div class="search-result-meta">${(g.genres||[]).map(x=>x.name).join(', ')||'Game'} · ${g.released||'TBA'}</div>
+        <div class="search-result-name">${escapeHTML(g.name)}</div>
+        <div class="search-result-meta">${escapeHTML((g.genres||[]).map(x=>x.name).join(', ')||'Game')} · ${g.released||'TBA'}</div>
       </div>
     </a>`).join('');
 }
@@ -366,7 +379,8 @@ const Wishlist = {
   add(game) {
     const list = Wishlist.get();
     if (!list.find(g => g.slug === game.slug)) {
-      list.push({ slug: game.slug, name: game.name, img: game.background_image, rating: game.rating, released: game.released });
+      // FIX: store background_image (not img) so gameCardHTML can read it
+      list.push({ slug: game.slug, name: game.name, background_image: game.background_image, rating: game.rating, released: game.released });
       localStorage.setItem('polylog_wishlist', JSON.stringify(list));
       showToast(`Added "${game.name}" to wishlist`, '💙');
     } else { showToast('Already in wishlist', 'ℹ️'); }
@@ -428,20 +442,38 @@ function hideLoader() {
   setTimeout(() => loader.classList.add('hidden'), 400);
 }
 
-// ── Platform filter ───────────────────────────────────────────
+// ── Cookie Consent — kept from modified version ───────────────
+function initCookieConsent() {
+  const consent = document.getElementById('cookie-consent');
+  if (!consent) return;
+  // FIX: use namespaced key so it doesn't clash with other sites
+  if (localStorage.getItem('polylog_cookie_consent')) {
+    consent.style.display = 'none';
+    return;
+  }
+  document.getElementById('cookie-accept')?.addEventListener('click', () => {
+    localStorage.setItem('polylog_cookie_consent', 'true');
+    consent.style.display = 'none';
+  });
+}
+
+// ── Platform IDs ──────────────────────────────────────────────
 const PLATFORM_IDS = { pc: 4, playstation: 187, xbox: 1, nintendo: 7 };
 
-// ── Init everything shared ────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
   initSearch();
   initModal();
   initBackToTop();
   initFadeUp();
+  initCookieConsent();
   setTimeout(hideLoader, 600);
 });
 
-// Export for page-specific scripts
+// ── Exports ───────────────────────────────────────────────────
+// FIX: PLATFORM_IDS was dropped in modified version — restored
+// FIX: escapeHTML added (new useful export)
 window.POLYLOG = {
   RAWG, CheapShark, News, CONFIG,
   gameCardHTML, renderGames, skeletonCards,
@@ -451,4 +483,5 @@ window.POLYLOG = {
   getNewsTag, extractYTId, formatPrice, metaScore,
   imgSrc, imgWideSrc, PLACEHOLDER, PLACEHOLDER_WIDE,
   PLATFORM_IDS,
+  escapeHTML,
 };

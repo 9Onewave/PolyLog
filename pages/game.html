@@ -10,44 +10,34 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     .info-block { background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:20px; }
-    .info-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); font-size:13.5px; }
+    .info-row { display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13.5px; }
     .info-row:last-child { border-bottom:none; }
-    .info-row-label { color:var(--text-3); font-weight:500; }
-    .info-row-val { color:var(--text); font-weight:600; text-align:right; max-width:60%; }
-    .review-source { background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:16px; }
+    .info-row-label { color:var(--text-3);font-weight:500; }
+    .info-row-val { color:var(--text);font-weight:600;text-align:right;max-width:60%; }
     .similar-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px; }
   </style>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-04H1D0WZHN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-04H1D0WZHN');
-</script>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-04H1D0WZHN"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-04H1D0WZHN');</script>
 </head>
 <body>
 <script src="../js/components.js"></script>
 
 <main id="game-main">
-  <!-- Hero injected by JS -->
   <div id="game-hero-wrap"></div>
 
   <div class="container" style="margin-top:40px" id="game-body">
     <div style="display:grid;grid-template-columns:1fr 300px;gap:32px;align-items:start" id="game-layout">
-      <!-- Tabs area -->
       <div>
         <div class="tabs" id="game-tabs">
           <button class="tab active" data-tab="overview">Overview</button>
           <button class="tab" data-tab="media">Media</button>
-          <button class="tab" data-tab="prices">Platforms & Prices</button>
+          <button class="tab" data-tab="prices">Platforms &amp; Prices</button>
           <button class="tab" data-tab="reviews">Reviews</button>
           <button class="tab" data-tab="similar">Similar Games</button>
         </div>
         <div id="tab-content"></div>
       </div>
-      <!-- Sidebar -->
       <aside id="game-sidebar"></aside>
     </div>
   </div>
@@ -58,41 +48,60 @@
 (async function () {
   const P = window.POLYLOG;
   const slug = new URLSearchParams(window.location.search).get('slug');
-  if (!slug) { document.getElementById('game-main').innerHTML = '<div class="container" style="padding:100px 0;text-align:center"><h2>Game not found</h2><a href="games.html" class="btn btn-primary" style="margin-top:24px">Browse Games</a></div>'; return; }
 
-  // Load game data
+  if (!slug) {
+    document.getElementById('game-main').innerHTML = `
+      <div class="container" style="padding:100px 0;text-align:center">
+        <h2>Game not found</h2>
+        <a href="games.html" class="btn btn-primary" style="margin-top:24px">Browse Games</a>
+      </div>`;
+    return;
+  }
+
   const [game, shots] = await Promise.all([P.RAWG.game(slug), P.RAWG.screenshots(slug)]);
-  if (!game) { document.getElementById('game-main').innerHTML = '<div class="container" style="padding:100px 0;text-align:center"><h2>Game not found</h2><p style="margin-top:12px;color:var(--text-3)">We couldn\'t load this game.</p><a href="games.html" class="btn btn-primary" style="margin-top:24px">Browse Games</a></div>'; return; }
 
-  // SEO
+  if (!game) {
+    document.getElementById('game-main').innerHTML = `
+      <div class="container" style="padding:100px 0;text-align:center">
+        <h2>Game not found</h2>
+        <p style="margin-top:12px;color:var(--text-3)">We couldn't load this game.</p>
+        <a href="games.html" class="btn btn-primary" style="margin-top:24px">Browse Games</a>
+      </div>`;
+    return;
+  }
+
+  // ── SEO ───────────────────────────────────────────────────
   document.getElementById('page-title').textContent = `${game.name} — PolyLog`;
   document.getElementById('page-desc').content = game.description_raw?.slice(0,160) || `Explore ${game.name} on PolyLog.`;
 
   // ── Hero ──────────────────────────────────────────────────
-  const platforms = (game.platforms || []).map(p => `<span class="meta-chip">${P.platformIcon(p.platform.name)} ${p.platform.name}</span>`).join('');
-  const genres = (game.genres || []).map(g => `<span class="badge badge-blue">${g.name}</span>`).join('');
-  const rating = game.rating ? `<span class="hero-rating">⭐ ${game.rating.toFixed(1)} / 5</span>` : '';
-  const ms = P.metaScore(game);
-  const msColor = ms >= 75 ? 'var(--green)' : ms >= 50 ? 'var(--yellow)' : 'var(--orange)';
-  const release = game.released ? new Date(game.released).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : 'TBA';
-  const ytQuery = encodeURIComponent(game.name + ' official trailer');
+  const platforms = (game.platforms||[]).map(p =>
+    `<span class="meta-chip">${P.platformIcon(p.platform.name)} ${P.escapeHTML(p.platform.name)}</span>`).join('');
+  const genres   = (game.genres||[]).map(g => `<span class="badge badge-blue">${P.escapeHTML(g.name)}</span>`).join('');
+  const rating   = game.rating ? `<span class="hero-rating">⭐ ${game.rating.toFixed(1)} / 5</span>` : '';
+  const ms       = P.metaScore(game);
+  const release  = game.released
+    ? new Date(game.released).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})
+    : 'TBA';
+  const ytQuery  = encodeURIComponent(game.name + ' official trailer');
 
   document.getElementById('game-hero-wrap').innerHTML = `
     <div class="game-detail-hero" style="padding-top:var(--nav-h)">
       <div class="game-detail-bg">
-        <img src="${game.background_image||''}" alt="${game.name} background" loading="eager">
+        <img src="${game.background_image||''}" alt="${P.escapeHTML(game.name)} background" loading="eager">
         <div class="game-detail-bg-grad"></div>
       </div>
       <div class="container" style="width:100%">
         <div class="game-detail-content">
           <div class="game-detail-cover">
-            <img src="${game.background_image_additional || game.background_image || P.PLACEHOLDER}" alt="${game.name} cover" loading="eager">
+            <img src="${game.background_image_additional||game.background_image||P.PLACEHOLDER}" alt="${P.escapeHTML(game.name)} cover" loading="eager">
           </div>
           <div class="game-detail-info">
-            <a href="games.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-3)'">
+            <a href="games.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);margin-bottom:12px;transition:color .2s"
+               onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-3)'">
               ← Back to Games
             </a>
-            <h1 class="game-detail-title">${game.name}</h1>
+            <h1 class="game-detail-title">${P.escapeHTML(game.name)}</h1>
             <div class="game-detail-meta-row">
               ${rating}
               ${ms ? `<span class="meta-chip meta-chip-accent">🏅 Metacritic: ${ms}</span>` : ''}
@@ -112,14 +121,15 @@
       </div>
     </div>`;
 
+  // FIX: use addEventListener — no inline onclick with complex JSON
   document.getElementById('wishlist-btn')?.addEventListener('click', () => P.Wishlist.add(game));
 
   // ── Sidebar ───────────────────────────────────────────────
-  const tags = (game.tags || []).slice(0, 10).map(t => `<span class="badge badge-blue" style="margin:2px">${t.name}</span>`).join('');
-  const devs = (game.developers || []).map(d => d.name).join(', ') || 'Unknown';
-  const pubs = (game.publishers || []).map(p => p.name).join(', ') || 'Unknown';
+  const tags = (game.tags||[]).slice(0,10).map(t =>
+    `<span class="badge badge-blue" style="margin:2px">${P.escapeHTML(t.name)}</span>`).join('');
+  const devs = (game.developers||[]).map(d => P.escapeHTML(d.name)).join(', ') || 'Unknown';
+  const pubs = (game.publishers||[]).map(p => P.escapeHTML(p.name)).join(', ') || 'Unknown';
   const esrb = game.esrb_rating?.name || 'Not Rated';
-  const modeLabels = { 'single-player':'👤 Single Player','multiplayer':'👥 Multiplayer','co-op':'🤝 Co-op','massively-multiplayer':'🌍 MMO','online-multiplayer':'🌐 Online' };
 
   document.getElementById('game-sidebar').innerHTML = `
     <div class="info-block" style="margin-bottom:16px">
@@ -127,7 +137,7 @@
       <div class="info-row"><span class="info-row-label">Developer</span><span class="info-row-val">${devs}</span></div>
       <div class="info-row"><span class="info-row-label">Publisher</span><span class="info-row-val">${pubs}</span></div>
       <div class="info-row"><span class="info-row-label">Released</span><span class="info-row-val">${release}</span></div>
-      <div class="info-row"><span class="info-row-label">ESRB</span><span class="info-row-val">${esrb}</span></div>
+      <div class="info-row"><span class="info-row-label">ESRB</span><span class="info-row-val">${P.escapeHTML(esrb)}</span></div>
       <div class="info-row"><span class="info-row-label">Playtime</span><span class="info-row-val">${game.playtime ? game.playtime + ' hrs avg' : 'N/A'}</span></div>
       <div class="info-row"><span class="info-row-label">Achievements</span><span class="info-row-val">${game.achievements_count || 0}</span></div>
     </div>
@@ -142,14 +152,14 @@
       <div class="info-row"><span class="info-row-label">Rating</span><span class="info-row-val" style="color:var(--yellow)">${game.rating ? '⭐ ' + game.rating.toFixed(2) + ' / 5' : 'N/A'}</span></div>
     </div>`;
 
-  // ── Tabs ──────────────────────────────────────────────────
+  // ── Tab rendering ─────────────────────────────────────────
   const tabContent = document.getElementById('tab-content');
-  const tabs = { overview: overviewHTML, media: mediaHTML, prices: pricesHTML, reviews: reviewsHTML, similar: similarHTML };
-  let activeTab = 'overview';
 
   async function renderTab(name) {
-    tabContent.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-3)"><div class="skeleton" style="height:200px;border-radius:var(--radius)"></div></div>';
-    tabContent.innerHTML = await tabs[name]();
+    tabContent.innerHTML = `<div style="padding:32px;text-align:center;color:var(--text-3)">
+      <div class="skeleton" style="height:200px;border-radius:var(--radius)"></div>
+    </div>`;
+    tabContent.innerHTML = await TAB[name]();
     P.initFadeUp(tabContent);
   }
 
@@ -157,154 +167,175 @@
     const tab = e.target.closest('.tab'); if (!tab) return;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
-    activeTab = tab.dataset.tab;
-    renderTab(activeTab);
+    renderTab(tab.dataset.tab);
   });
 
   renderTab('overview');
 
-  // ── Tab content functions ─────────────────────────────────
-  function overviewHTML() {
-    const desc = game.description_raw || game.description?.replace(/<[^>]+>/g,'') || 'No description available.';
-    const modes = (game.tags||[]).filter(t => Object.keys(modeLabels).includes(t.slug)).map(t => `<span class="badge badge-purple">${modeLabels[t.slug]||t.name}</span>`).join(' ');
-    return `<div>
-      <h3 style="margin-bottom:12px;font-size:1.1rem">About</h3>
-      <p style="font-size:14px;line-height:1.8;margin-bottom:24px;white-space:pre-line">${desc.slice(0,1200)}${desc.length>1200?'…':''}</p>
-      ${modes ? `<div style="margin-bottom:24px"><h4 style="margin-bottom:8px;font-size:.9rem;color:var(--text-3)">Game Modes</h4><div style="display:flex;gap:8px;flex-wrap:wrap">${modes}</div></div>` : ''}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div class="info-block">
-          <div style="font-family:var(--font-display);font-size:.85rem;font-weight:700;margin-bottom:10px;color:var(--text-3)">GENRES</div>
-          ${(game.genres||[]).map(g=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">${g.name}</div>`).join('')||'<span style="font-size:13px;color:var(--text-3)">Unknown</span>'}
-        </div>
-        <div class="info-block">
-          <div style="font-family:var(--font-display);font-size:.85rem;font-weight:700;margin-bottom:10px;color:var(--text-3)">STORES</div>
-          ${(game.stores||[]).map(s=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">🏪 ${s.store.name}</div>`).join('')||'<span style="font-size:13px;color:var(--text-3)">No store data</span>'}
-        </div>
-      </div>
-    </div>`;
-  }
+  // ── Tab content ───────────────────────────────────────────
+  const modeLabels = {
+    'single-player':       '👤 Single Player',
+    'multiplayer':         '👥 Multiplayer',
+    'co-op':               '🤝 Co-op',
+    'massively-multiplayer':'🌍 MMO',
+    'online-multiplayer':  '🌐 Online',
+  };
 
-  function mediaHTML() {
-    const images = shots?.results || [];
-    const ytQuery = encodeURIComponent(game.name + ' official trailer gameplay');
-    return `<div>
-      <h3 style="margin-bottom:16px">Trailers</h3>
-      <div style="border-radius:var(--radius);overflow:hidden;margin-bottom:32px;background:var(--bg-3);border:1px solid var(--border)">
-        <div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;cursor:pointer" onclick="window.open('https://www.youtube.com/results?search_query=${ytQuery}','_blank')">
-          <div style="width:72px;height:72px;border-radius:50%;background:var(--accent-dim);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color:var(--accent);margin-left:3px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+  const TAB = {
+    overview() {
+      const desc  = game.description_raw || game.description?.replace(/<[^>]+>/g,'') || 'No description available.';
+      const modes = (game.tags||[])
+        .filter(t => modeLabels[t.slug])
+        .map(t => `<span class="badge badge-purple">${modeLabels[t.slug]}</span>`)
+        .join(' ');
+      return `<div>
+        <h3 style="margin-bottom:12px;font-size:1.1rem">About</h3>
+        <p style="font-size:14px;line-height:1.8;margin-bottom:24px;white-space:pre-line">${P.escapeHTML(desc.slice(0,1200))}${desc.length>1200?'…':''}</p>
+        ${modes ? `<div style="margin-bottom:24px"><h4 style="margin-bottom:8px;font-size:.9rem;color:var(--text-3)">Game Modes</h4><div style="display:flex;gap:8px;flex-wrap:wrap">${modes}</div></div>` : ''}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="info-block">
+            <div style="font-family:var(--font-display);font-size:.85rem;font-weight:700;margin-bottom:10px;color:var(--text-3)">GENRES</div>
+            ${(game.genres||[]).map(g=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">${P.escapeHTML(g.name)}</div>`).join('') || '<span style="font-size:13px;color:var(--text-3)">Unknown</span>'}
           </div>
-          <span style="font-size:14px;color:var(--text-2)">Watch ${game.name} Trailer on YouTube</span>
+          <div class="info-block">
+            <div style="font-family:var(--font-display);font-size:.85rem;font-weight:700;margin-bottom:10px;color:var(--text-3)">STORES</div>
+            ${(game.stores||[]).map(s=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">🏪 ${P.escapeHTML(s.store.name)}</div>`).join('') || '<span style="font-size:13px;color:var(--text-3)">No store data</span>'}
+          </div>
         </div>
-      </div>
-      <h3 style="margin-bottom:16px">Screenshots <span style="font-size:13px;font-weight:400;color:var(--text-3)">(${images.length})</span></h3>
-      ${images.length ? `<div class="screenshot-grid">${images.map(s=>`<div class="screenshot-item"><img src="${s.image}" alt="Screenshot" loading="lazy" onclick="window.open('${s.image}','_blank')"></div>`).join('')}</div>` : '<p style="color:var(--text-3)">No screenshots available.</p>'}
-    </div>`;
-  }
+      </div>`;
+    },
 
-  async function pricesHTML() {
-    const platforms = game.platforms || [];
-    const stores = game.stores || [];
-    let dealsHTML = '';
-    try {
-      const deals = await P.CheapShark.searchDeals(game.name);
-      if (deals && deals.length) {
-        dealsHTML = `<h3 style="margin:24px 0 16px">Current PC Deals</h3>
-          <div style="display:flex;flex-direction:column;gap:10px">
-          ${deals.slice(0,5).map(d=>`
-            <a href="https://www.cheapshark.com/redirect?dealID=${d.dealID}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;transition:all .2s;text-decoration:none" onmouseover="this.style.borderColor='var(--border-2)'" onmouseout="this.style.borderColor='var(--border)'">
-              <span style="font-size:13.5px;color:var(--text)">${d.title}</span>
-              <div style="display:flex;align-items:center;gap:10px">
-                <span style="text-decoration:line-through;font-size:12px;color:var(--text-3)">$${parseFloat(d.normalPrice).toFixed(2)}</span>
-                <span style="font-size:1rem;font-weight:700;color:var(--green)">$${parseFloat(d.salePrice).toFixed(2)}</span>
-                <span class="badge badge-green">-${Math.round(d.savings)}%</span>
-              </div>
-            </a>`).join('')}
-          </div>`;
-      }
-    } catch(e) {}
-    return `<div>
-      <h3 style="margin-bottom:16px">Available Platforms</h3>
-      <table class="platform-table">
-        <thead><tr><th>Platform</th><th>Release Date</th><th>Notes</th></tr></thead>
-        <tbody>
-          ${platforms.length ? platforms.map(p=>`<tr>
-            <td style="font-weight:600">${P.platformIcon(p.platform.name)} ${p.platform.name}</td>
-            <td style="color:var(--text-2)">${p.released_at ? new Date(p.released_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : game.released || 'TBA'}</td>
-            <td style="color:var(--text-3)">Available</td>
-          </tr>`).join('') : '<tr><td colspan="3" style="color:var(--text-3);text-align:center">No platform data available</td></tr>'}
-        </tbody>
-      </table>
-      ${stores.length ? `<h3 style="margin:24px 0 16px">Available Stores</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          ${stores.map(s=>`<a href="${s.url_en||'#'}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">🏪 ${s.store.name}</a>`).join('')}
-        </div>` : ''}
-      ${dealsHTML}
-    </div>`;
-  }
+    media() {
+      const images  = shots?.results || [];
+      const ytQuery = encodeURIComponent(game.name + ' official trailer gameplay');
+      return `<div>
+        <h3 style="margin-bottom:16px">Trailer</h3>
+        <div style="border-radius:var(--radius);overflow:hidden;margin-bottom:32px;background:var(--bg-3);border:1px solid var(--border)">
+          <div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;cursor:pointer"
+               onclick="window.open('https://www.youtube.com/results?search_query=${ytQuery}','_blank','noopener')">
+            <div style="width:72px;height:72px;border-radius:50%;background:var(--accent-dim);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color:var(--accent);margin-left:3px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <span style="font-size:14px;color:var(--text-2)">Watch ${P.escapeHTML(game.name)} Trailer on YouTube</span>
+          </div>
+        </div>
+        <h3 style="margin-bottom:16px">Screenshots <span style="font-size:13px;font-weight:400;color:var(--text-3)">(${images.length})</span></h3>
+        ${images.length
+          ? `<div class="screenshot-grid">${images.map(s=>`<div class="screenshot-item"><img src="${s.image}" alt="Screenshot" loading="lazy" onclick="window.open('${s.image}','_blank')"></div>`).join('')}</div>`
+          : '<p style="color:var(--text-3)">No screenshots available.</p>'}
+      </div>`;
+    },
 
-  function reviewsHTML() {
-    const ratings = game.ratings || [];
-    const total = game.reviews_count || 0;
-    const ms = P.metaScore(game);
-    const msColor = ms >= 75 ? 'var(--green)' : ms >= 50 ? 'var(--yellow)' : 'var(--red)';
-    return `<div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-bottom:32px">
-        <div class="info-block" style="text-align:center">
-          <div style="font-size:3rem;font-family:var(--font-display);font-weight:800;color:var(--yellow)">${game.rating?.toFixed(1)||'N/A'}</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:4px">RAWG Rating / 5</div>
-        </div>
-        ${ms ? `<div class="info-block" style="text-align:center">
-          <div style="font-size:3rem;font-family:var(--font-display);font-weight:800;color:${msColor}">${ms}</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:4px">Metacritic Score</div>
-        </div>` : ''}
-        <div class="info-block" style="text-align:center">
-          <div style="font-size:3rem;font-family:var(--font-display);font-weight:800;color:var(--accent)">${total.toLocaleString()}</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:4px">Total Reviews</div>
-        </div>
-      </div>
-      ${ratings.length ? `<h3 style="margin-bottom:16px">Rating Breakdown</h3>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
-          ${ratings.map(r=>{
-            const pct = total ? Math.round((r.count/total)*100) : 0;
-            const colors = { exceptional:'var(--green)', recommended:'var(--accent)', meh:'var(--orange)', skip:'var(--red)' };
-            const emojis = { exceptional:'🏆', recommended:'👍', meh:'😐', skip:'👎' };
-            return `<div style="display:flex;align-items:center;gap:12px">
-              <span style="font-size:18px">${emojis[r.title]||'⭐'}</span>
-              <span style="font-size:13px;font-weight:600;width:100px;text-transform:capitalize">${r.title}</span>
-              <div style="flex:1;height:8px;background:var(--bg-3);border-radius:999px;overflow:hidden">
-                <div style="height:100%;width:${pct}%;background:${colors[r.title]||'var(--accent)'};border-radius:999px;transition:width .6s ease"></div>
-              </div>
-              <span style="font-size:12px;color:var(--text-3);width:60px;text-align:right">${r.count.toLocaleString()} (${pct}%)</span>
+    async prices() {
+      const platList = game.platforms || [];
+      const stores   = game.stores    || [];
+      let dealsHTML  = '';
+      try {
+        const deals = await P.CheapShark.searchDeals(game.name);
+        if (deals && deals.length) {
+          dealsHTML = `<h3 style="margin:24px 0 16px">Current PC Deals</h3>
+            <div style="display:flex;flex-direction:column;gap:10px">
+            ${deals.slice(0,5).map(d=>`
+              <a href="https://www.cheapshark.com/redirect?dealID=${d.dealID}" target="_blank" rel="noopener"
+                 style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;transition:border-color .2s;text-decoration:none"
+                 onmouseover="this.style.borderColor='var(--border-2)'" onmouseout="this.style.borderColor='var(--border)'">
+                <span style="font-size:13.5px;color:var(--text)">${P.escapeHTML(d.title)}</span>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:12px">
+                  <span style="text-decoration:line-through;font-size:12px;color:var(--text-3)">$${parseFloat(d.normalPrice).toFixed(2)}</span>
+                  <span style="font-size:1rem;font-weight:700;color:var(--green)">$${parseFloat(d.salePrice).toFixed(2)}</span>
+                  <span class="badge badge-green">-${Math.round(d.savings)}%</span>
+                </div>
+              </a>`).join('')}
             </div>`;
-          }).join('')}
-        </div>` : ''}
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        ${game.metacritic_url ? `<a href="${game.metacritic_url}" target="_blank" rel="noopener" class="btn btn-secondary">🏅 View on Metacritic</a>` : ''}
-        <a href="https://rawg.io/games/${slug}" target="_blank" rel="noopener" class="btn btn-secondary">🎮 View on RAWG</a>
-      </div>
-    </div>`;
-  }
+        }
+      } catch(e) { /* no deals available */ }
+      return `<div>
+        <h3 style="margin-bottom:16px">Available Platforms</h3>
+        <table class="platform-table">
+          <thead><tr><th>Platform</th><th>Release Date</th><th>Status</th></tr></thead>
+          <tbody>
+            ${platList.length
+              ? platList.map(p=>`<tr>
+                  <td style="font-weight:600">${P.platformIcon(p.platform.name)} ${P.escapeHTML(p.platform.name)}</td>
+                  <td style="color:var(--text-2)">${p.released_at ? new Date(p.released_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : game.released||'TBA'}</td>
+                  <td style="color:var(--text-3)">Available</td>
+                </tr>`).join('')
+              : '<tr><td colspan="3" style="color:var(--text-3);text-align:center">No platform data available</td></tr>'}
+          </tbody>
+        </table>
+        ${stores.length ? `<h3 style="margin:24px 0 16px">Available Stores</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${stores.map(s=>`<a href="${s.url_en||'#'}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">🏪 ${P.escapeHTML(s.store.name)}</a>`).join('')}
+          </div>` : ''}
+        ${dealsHTML}
+      </div>`;
+    },
 
-  async function similarHTML() {
-    const data = await P.RAWG.similar(slug);
-    const games = data?.results || [];
-    if (!games.length) {
-      // Fallback: get games by same genre
-      const genreSlug = game.genres?.[0]?.slug;
-      const fallback = genreSlug ? await P.RAWG.games({ genres: genreSlug, ordering: '-rating', page_size: 6, exclude_game: slug }) : null;
-      const fallbackGames = fallback?.results || [];
-      if (!fallbackGames.length) return `<p style="color:var(--text-3)">No similar games found.</p>`;
-      return `<div><h3 style="margin-bottom:16px">More ${game.genres?.[0]?.name || ''} Games</h3><div class="similar-grid">${fallbackGames.filter(g=>g.slug!==slug).slice(0,6).map(P.gameCardHTML).join('')}</div></div>`;
-    }
-    return `<div><h3 style="margin-bottom:16px">Games in the Same Series</h3><div class="similar-grid">${games.slice(0,6).map(P.gameCardHTML).join('')}</div></div>`;
-  }
+    reviews() {
+      const ratings = game.ratings || [];
+      const total   = game.reviews_count || 0;
+      const ms      = P.metaScore(game);
+      const msColor = ms >= 75 ? 'var(--green)' : ms >= 50 ? 'var(--yellow)' : 'var(--red)';
+      return `<div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-bottom:32px">
+          <div class="info-block" style="text-align:center">
+            <div style="font-size:3rem;font-family:var(--font-display);font-weight:800;color:var(--yellow)">${game.rating?.toFixed(1)||'N/A'}</div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:4px">RAWG Rating / 5</div>
+          </div>
+          ${ms ? `<div class="info-block" style="text-align:center">
+            <div style="font-size:3rem;font-family:var(--font-display);font-weight:800;color:${msColor}">${ms}</div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:4px">Metacritic Score</div>
+          </div>` : ''}
+          <div class="info-block" style="text-align:center">
+            <div style="font-size:3rem;font-family:var(--font-display);font-weight:800;color:var(--accent)">${total.toLocaleString()}</div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:4px">Total Reviews</div>
+          </div>
+        </div>
+        ${ratings.length ? `<h3 style="margin-bottom:16px">Rating Breakdown</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+            ${ratings.map(r => {
+              const pct = total ? Math.round((r.count/total)*100) : 0;
+              const colors = { exceptional:'var(--green)', recommended:'var(--accent)', meh:'var(--orange)', skip:'var(--red)' };
+              const emojis = { exceptional:'🏆', recommended:'👍', meh:'😐', skip:'👎' };
+              return `<div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:18px">${emojis[r.title]||'⭐'}</span>
+                <span style="font-size:13px;font-weight:600;width:100px;text-transform:capitalize">${r.title}</span>
+                <div style="flex:1;height:8px;background:var(--bg-3);border-radius:999px;overflow:hidden">
+                  <div style="height:100%;width:${pct}%;background:${colors[r.title]||'var(--accent)'};border-radius:999px;transition:width .6s ease"></div>
+                </div>
+                <span style="font-size:12px;color:var(--text-3);width:70px;text-align:right">${r.count.toLocaleString()} (${pct}%)</span>
+              </div>`;
+            }).join('')}
+          </div>` : ''}
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          ${game.metacritic_url ? `<a href="${game.metacritic_url}" target="_blank" rel="noopener" class="btn btn-secondary">🏅 View on Metacritic</a>` : ''}
+          <a href="https://rawg.io/games/${slug}" target="_blank" rel="noopener" class="btn btn-secondary">🎮 View on RAWG</a>
+        </div>
+      </div>`;
+    },
 
-  // Mobile: stack layout
+    async similar() {
+      const data  = await P.RAWG.similar(slug);
+      let games   = data?.results || [];
+      let heading = 'Games in the Same Series';
+      if (!games.length) {
+        const genreSlug = game.genres?.[0]?.slug;
+        if (genreSlug) {
+          const fallback = await P.RAWG.games({ genres: genreSlug, ordering: '-rating', page_size: 8 });
+          games   = (fallback?.results || []).filter(g => g.slug !== slug).slice(0,6);
+          heading = `More ${P.escapeHTML(game.genres[0].name)} Games`;
+        }
+      }
+      if (!games.length) return `<p style="color:var(--text-3)">No similar games found.</p>`;
+      return `<div><h3 style="margin-bottom:16px">${heading}</h3><div class="similar-grid">${games.slice(0,6).map(P.gameCardHTML).join('')}</div></div>`;
+    },
+  };
+
+  // ── Mobile: stack sidebar below tabs ──────────────────────
   if (window.innerWidth < 900) {
     document.getElementById('game-layout').style.gridTemplateColumns = '1fr';
     const sidebar = document.getElementById('game-sidebar');
-    sidebar.parentNode.appendChild(sidebar); // move to bottom
+    sidebar.parentNode.appendChild(sidebar);
   }
 })();
 </script>
