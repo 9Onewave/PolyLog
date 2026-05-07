@@ -1184,32 +1184,184 @@ p  { color: var(--text-2); line-height: 1.7; }
 }
 
 /* ── Responsive ──────────────────────────────────────────────── */
+
+/* Tablet — 1024px */
 @media (max-width: 1024px) {
   .news-grid { grid-template-columns: 1fr; }
   .footer-top { grid-template-columns: 1fr; }
   .footer-links-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Mobile — 768px */
 @media (max-width: 768px) {
+  /* Nav */
   .nav-links { display: none; }
   .nav-platform-pills { display: none; }
   .nav-hamburger { display: flex; }
+
+  /* Hero */
   .hero-scroll-indicator { display: none; }
+  #hero { min-height: 92vh; padding-bottom: 48px; align-items: flex-end; }
+  .hero-content { padding-top: 80px !important; max-width: 100%; }
+  .hero-title { font-size: clamp(1.8rem, 7vw, 2.6rem) !important; margin-bottom: 12px; }
+  .hero-desc { font-size: 14px; margin-bottom: 24px; max-width: 100%; }
+  .hero-meta { gap: 10px; margin-bottom: 14px; }
+  .hero-actions { gap: 8px; }
+  .hero-actions .btn { height: 40px; padding: 0 18px; font-size: 13px; }
+
+  /* Sections */
+  .section { padding: 44px 0; }
+  .section-sm { padding: 32px 0; }
+  .section-header { margin-bottom: 20px; }
+  .section-title { font-size: 1.3rem; }
+
+  /* Page hero (inner pages) */
+  .page-hero { padding: 100px 0 36px; }
+  .page-hero-title { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+
+  /* Grids */
   .games-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .trailers-grid { grid-template-columns: 1fr 1fr; }
-  .section { padding: 56px 0; }
-  h1 { font-size: 2.2rem; }
-  .game-detail-content { flex-direction: column; align-items: flex-start; gap: 20px; }
-  .game-detail-cover { width: 130px; }
-  .stats-bar { gap: 20px; padding: 16px 20px; }
+  .trailers-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .deals-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  /* Filter bar — horizontal scroll on small screens */
+  .filter-bar {
+    padding: 10px 14px;
+    gap: 8px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chips { flex-wrap: nowrap; }
+  .filter-label { flex-shrink: 0; }
+  .filter-select { flex-shrink: 0; }
+
+  /* Tabs — scrollable, no wrap */
+  .tabs { gap: 0; }
+  .tab { padding: 10px 14px; font-size: 13px; }
+
+  /* Stats bar */
+  .stats-bar {
+    gap: 16px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  .stats-bar::-webkit-scrollbar { display: none; }
+  .stat-num { font-size: 1.3rem; }
+
+  /* Game detail layout — sidebar stacks below on mobile */
+  #game-layout { grid-template-columns: 1fr !important; }
+  #game-sidebar { order: 2; }
+
+  /* Game detail hero */
+  .game-detail-content { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px 0 32px; }
+  .game-detail-cover { width: 110px; }
+  .game-detail-title { font-size: clamp(1.4rem, 5vw, 2rem); }
+  .game-detail-meta-row { gap: 6px; margin-bottom: 10px; }
+  .game-detail-actions { gap: 8px; }
+  .game-detail-actions .btn { height: 38px; padding: 0 14px; font-size: 13px; }
+
+  /* Footer */
   .footer-links-grid { grid-template-columns: 1fr 1fr; }
+  #footer { padding: 40px 0 24px; margin-top: 48px; }
+  .footer-bottom { font-size: 11.5px; }
 }
+
+/* Small mobile — 480px */
 @media (max-width: 480px) {
-  .container { padding: 0 16px; }
+  :root { --nav-h: 60px; }
+  .container { padding: 0 14px; }
+
+  /* Hero */
+  #hero { min-height: 88vh; }
+  .hero-title { font-size: 1.7rem !important; }
+  .hero-actions { flex-direction: column; align-items: flex-start; }
+  .hero-actions .btn { width: 100%; justify-content: center; }
+
+  /* Grids — single column on very small screens */
   .games-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .trailers-grid { grid-template-columns: 1fr; }
-  .filter-bar { padding: 10px 14px; }
-  .footer-links-grid { grid-template-columns: 1fr; }
+  .deals-grid { grid-template-columns: 1fr; }
+
+  /* Game cards — slightly smaller text */
+  .game-card-title { font-size: 13px; }
+  .game-card-body { padding: 10px; gap: 6px; }
+
+  /* Upcoming card */
+  .upcoming-card { width: 180px; }
+  .countdown-num { font-size: 14px; }
+  .countdown-unit { min-width: 34px; padding: 3px 5px; }
+
+  /* Tabs */
+  .tab { padding: 9px 11px; font-size: 12px; }
+
+  /* Filter bar */
+  .filter-chip { height: 28px; padding: 0 10px; font-size: 11.5px; }
+
+  /* Buttons */
+  .btn { height: 40px; font-size: 13px; }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 12px; }
+
+  /* Game detail */
+  .game-detail-cover { width: 90px; }
+  .game-detail-title { font-size: 1.3rem; }
+  .meta-chip { font-size: 11px; padding: 3px 8px; }
+  .game-detail-actions { flex-direction: column; }
+  .game-detail-actions .btn { width: 100%; justify-content: center; }
+
+  /* Stats bar — wrap allowed on very small */
+  .stats-bar { flex-wrap: wrap; gap: 14px; }
+
+  /* Modal */
   .modal { border-radius: var(--radius); }
+  .modal-header { padding: 14px 16px; }
+
+  /* Footer */
+  .footer-links-grid { grid-template-columns: 1fr; }
+  .footer-top { gap: 28px; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; gap: 10px; }
+
+  /* Search overlay */
+  .search-bar-wrap { margin-top: 60px; }
+  .search-bar { height: 50px; font-size: 15px; }
+
+  /* Cookie consent */
+  #cookie-consent { padding: 14px 16px; gap: 10px; }
+
+  /* Toast */
+  #toast-container { right: 12px; bottom: 16px; left: 12px; }
+  .toast { max-width: 100%; }
+
+  /* Back to top */
+  #back-to-top { bottom: 16px; left: 16px; width: 36px; height: 36px; }
+
+  /* News list card */
+  .news-list-card { height: auto; min-height: 80px; }
+  .news-list-img { width: 90px; }
+
+  /* Platform table — allow horizontal scroll */
+  .platform-table { font-size: 13px; }
+  .platform-table th,
+  .platform-table td { padding: 10px 12px; }
+
+  /* Info block rows */
+  .info-row { font-size: 12.5px; }
+  .info-row-val { max-width: 55%; }
+
+  /* Screenshot grid */
+  .screenshot-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+  /* Similar games grid */
+  .similar-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  /* Page hero */
+  .page-hero { padding: 88px 0 28px; }
+  .page-hero-title { font-size: 1.6rem; }
+  .page-hero-desc { font-size: 14px; }
 }
 
 /* ── Misc ─────────────────────────────────────────────────────── */

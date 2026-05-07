@@ -19,6 +19,16 @@
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-04H1D0WZHN"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-04H1D0WZHN');</script>
+  </script>
+  <!-- Google Analytics — kept from modified version -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-04H1D0WZHN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-04H1D0WZHN');
+  </script>
+
 </head>
 <body>
 <script src="../js/components.js"></script>
@@ -170,7 +180,7 @@
     renderTab(tab.dataset.tab);
   });
 
-  renderTab('overview');
+  // NOTE: renderTab('overview') is called AFTER TAB is defined below — do not move it up.
 
   // ── Tab content ───────────────────────────────────────────
   const modeLabels = {
@@ -331,7 +341,11 @@
     },
   };
 
-  // ── Mobile: stack sidebar below tabs ──────────────────────
+  // ── Initial tab render — MUST be after TAB object is defined ──
+  renderTab('overview');
+
+  /* ── Mobile: stack sidebar below tabs via CSS, not JS ─────── */
+  // JS fallback for older browsers — CSS handles it for modern ones
   if (window.innerWidth < 900) {
     document.getElementById('game-layout').style.gridTemplateColumns = '1fr';
     const sidebar = document.getElementById('game-sidebar');
